@@ -13,15 +13,15 @@ Link to the final release:
 #### Docker command
 To run the latest version of our website, it is first required to login to GitLab's Container Registry (using FEUP VPN/network):
 
-bash
+```bash
 docker login gitlab.up.pt:5050
-
+```
 
 After this, the image can be run with:
 
-bash
+```bash
 docker run -d --name lbaw2412 -p 8000:80 gitlab.up.pt:5050/lbaw/lbaw2425/lbaw2412
-
+```
 The application will be available at http://localhost:8000
 
 ## Usage
