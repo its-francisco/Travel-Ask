@@ -1,0 +1,45 @@
+:root .dark{
+    --main-color: #042a49;
+    --text-main-color: #042a49;
+    --dark-background: #1A202C;
+    --background-white: #FFFFFF;
+    --space-between-clickables: 1rem;
+    --white-text: #FFFFFF;
+    --box-shadow:  rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    --selected-color: var(--dark-background);
+    --grey: #4f6e88;
+    --unchecked: #555;
+    --travelling: #cc3954;
+    --selected-page: rgba(94, 131, 194, 0.394);
+    --hover-page: rgba(180, 200, 235, 0.394);
+    --black-text: #000;
+    --error: #5a1410;
+    --light-background: #f2fafe;
+    --light-shadow1: #cfe9ff;
+    --light-shadow2: #88aecd;
+    --error-message: #961b14;
+  }
+
+main > header .banner, footer img, .footer-links, .main-section, #map {
+    display: none
+}
+
+footer, footer .footer-contact {
+    padding: 0;
+}
+#page-content {
+    min-height: fit-content;
+}
+
+.card {
+    padding: 1em;
+    box-shadow: none;
+}
+
+.card:nth-of-type(odd), .card:nth-of-type(even) {
+    margin: 0;
+}
+
+#results, ul.answers, #profile-question-list, #profile-other-content #answers-section ul, #profile-other-content #comments-section ul {
+    box-shadow: none;
+}

@@ -1,0 +1,1046 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0'
+  title: 'Travel&Ask Web API'
+  description: 'Web Resources Specification (A7) for Travel&Ask'
+
+servers:
+  - url: 'http://localhost:8000'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+    Post:
+      type: object
+      properties:
+        content:
+          type: string
+        date:
+          type: string
+        edit:
+          type: boolean
+        id:
+          type: integer
+        user_id:
+          type: integer
+
+    Question:
+      type: object
+      properties:
+        post_id:
+          type: integer
+        title:
+          type: string
+        view_count:
+          type: integer
+        country_id:
+          type: integer
+        city_id:
+          type: integer
+
+externalDocs:
+  description: Find more info here.
+  url: https://gitlab.up.pt/lbaw/lbaw2425/lbaw2412/-/wikis/eap
+
+tags:
+  - name: 'M01: Authentication'
+  - name: 'M02: Questions, Answers and Comments'
+  - name: 'M03: Users'' Profiles and Custom Pages'
+  - name: 'M04: User Administration and Static pages'
+
+paths:
+  /:
+    get:
+      operationId: R401
+      summary: 'R401: Index Page'
+      description: 'Provide index page of the website. Access: PUB'
+      tags:
+        - 'M04: User Administration and Static pages'
+      responses:
+        '200':
+          description: 'Ok. Show index UI'
+
+  /login:
+    get:
+      operationId: R101
+      summary: 'R101: Login Form'
+      description: 'Provide login form. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show Log-in UI'
+    post:
+      operationId: R102
+      summary: 'R102: Login Action'
+      description: 'Processes the login form submission. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+
+      responses:
+        '302':
+          description: 'Redirect after processing the login credentials.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to personal feed.'
+                  value: '/feed'
+                302Error:
+                  description: 'Failed authentication. Redirect to login form.'
+                  value: '/login'
+
+  /logout:
+    get:
+      operationId: R103
+      summary: 'R103: Logout Action'
+      description: 'Logout the current authenticated user. Access: USR, MOD, ADM'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '302':
+          description: 'Redirect after processing logout.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful logout. Redirect to login form.'
+                  value: '/login'
+  /register:
+    get:
+      operationId: R104
+      summary: 'R104: Register Form'
+      description: 'Provide new user registration form. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show Sign-Up UI'
+    post:
+      operationId: R105
+      summary: 'R105: Register Action'
+      description: 'Processes the new user registration form submission. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+              required:
+                - name
+                - username
+                - email
+                - password
+                - password_confirmation
+      responses:
+        '302':
+          description: 'Redirect after processing the new user information.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user feed.'
+                  value: '/feed'
+                302Failure:
+                  description: 'Failed authentication. Redirect to register form.'
+                  value: '/register'
+  /feed:
+    get:
+      operationId: R301
+      summary: 'R301: Feed Page'
+      description: 'Provide the user''s feed page. Access: USR'
+      tags:
+        - 'M03: Users'' Profiles and Custom Pages'
+      responses:
+        '200':
+          description: 'Ok. Show feed UI'
+        '302':
+          description: 'Redirect to the login page if the user is not authenticated.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Error:
+                  description: 'User not authenticated. Redirect to login page.'
+                  value: '/login'
+  /about:
+    get:
+      operationId: R402
+      summary: 'R402: About Page'
+      description: 'Provide about page. Access: PUB'
+      tags:
+        - 'M04: User Administration and Static pages'
+      responses:
+        '200':
+          description: 'Ok. Show About Page UI'
+
+  /admin:
+    get:
+      operationId: R403
+      summary: 'R403: Admin Page'
+      description: 'Provide admin page. Access: ADM'
+      tags:
+        - 'M04: User Administration and Static pages'
+      responses:
+        '200':
+          description: 'Ok. Show Admin Page UI'
+        '403':
+          description: 'Forbidden - Unauthorized to access this page'
+
+  /users:
+    post:
+      operationId: R404
+      summary: 'R404: Create User'
+      description: 'Create user. Access: ADM'
+      tags:
+        - 'M04: User Administration and Static pages'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                username:
+                  type: string
+                  maxLength: 50
+                email:
+                  type: string
+                account:
+                  type: string
+                  enum:
+                    - "admin"
+                    - "moderator"
+                    - "verified"
+                    - "normal"
+              required:
+                - name
+                - username
+                - email
+                - account
+      responses:
+        '201':
+          description: "User created successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User created successfully."
+                  password:
+                    type: string
+                    example: "generatedpassword1234"
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - Unauthorized to create user'
+        '422':
+          description: 'Invalid parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The username field must not be greater than 50 characters."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: ["The username field must not be greater than 50 characters."]
+
+
+  /users/{id}:
+    get:
+      operationId: R302
+      summary: 'R302: View Profile'
+      description: 'Show the individual user profile. Access: PUB'
+      tags:
+        - 'M03: Users'' Profiles and Custom Pages'
+
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+
+      responses:
+        '200':
+          description: 'Ok. Show User Profile UI'
+        '400':
+          description: 'Bad request'
+        '404':
+          description: 'Not found - User with the given ID was not found'
+
+    post:
+      operationId: R303
+      summary: 'R303: Edit Profile'
+      description: 'Process changes made to a user. Access: OWN, ADM'
+      tags:
+        - 'M03: Users'' Profiles and Custom Pages'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                bio:
+                  type: string
+                  maxLength: 1000
+                photo:
+                  type: string
+                  format: binary
+                site:
+                  type: string
+              required:
+                - name
+
+      responses:
+        '302':
+          description: 'User edited with success, now redirect to profile.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user feed.'
+                  value: '/users/{id}'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        '400':
+          description: 'Bad request'
+        '404':
+          description: 'Not found - User with the given ID was not found'
+        '403':
+          description: 'Forbidden - Unauthorized to edit this user'
+        '422':
+          description: 'Invalid parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The bio field must not be greater than 1000 characters."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The bio field must not be greater than 1000 characters." ]
+
+
+  /api/users:
+    get:
+      operationId: R304
+      summary: 'R304: List all Users'
+      description: 'Get all users, possibly filtered by a search term. Access: PUB'
+      tags:
+        - 'M03: Users'' Profiles and Custom Pages'
+      parameters:
+        - name: query
+          in: query
+          description: Search term to filter users.
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of results per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+            minimum: 1
+
+      responses:
+        '200':
+          description: 'Users returned with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  count:
+                    type: integer
+
+        '400':
+          description: 'Bad request'
+        '422':
+          description: 'Invalid parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The limit field must not be greater than 100."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The limit field must not be greater than 100."]
+
+
+  /search:
+    get:
+      operationId: R201
+      summary: 'R201: Search Questions'
+      description: 'Gets all questions on the site that match a search term. Access: PUB'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - name: query
+          in: query
+          description: Search term to filter users.
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of results per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          description: sorting criteria
+          required: false
+          schema:
+            enum:
+              - 'relevance'
+              - 'newest'
+              - 'oldest'
+              - 'views'
+              - 'votes'
+            default: 'relevance'
+
+      responses:
+        '200':
+          description: 'Ok. Show UI for search results'
+        '400':
+          description: 'Bad request'
+        '422':
+          description: 'Invalid query parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The limit field must be an integer."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The limit field must be an integer." ]
+
+
+  /questions:
+    get:
+      operationId: R202
+      summary: 'R202: List Questions'
+      description: 'Show a listing of the questions of the site. Access: PUB.'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of results per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+        - name: sort
+          in: query
+          description: sorting criteria
+          required: false
+          schema:
+            enum:
+              - 'newest'
+              - 'oldest'
+              - 'views'
+              - 'votes'
+            default: 'views'
+      responses:
+        '200':
+          description: 'Ok. Show Questions UI'
+        '400':
+          description: 'Bad request'
+        '422':
+          description: 'Invalid query parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The limit field must be an integer."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The limit field must be an integer." ]
+
+  /questions/{id}:
+    get:
+      operationId: R203
+      summary: 'R203: View Question'
+      description: 'Show a question with answers and comments. Access: PUB.'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Question UI'
+        '400':
+          description: 'Bad request'
+        '404':
+          description: 'Not found - Question with the given ID was not found'
+
+  /questions/add:
+    get:
+      operationId: R204
+      summary: 'R204: New Question Form'
+      description: 'Provide new question form. Access: USR, MOD, ADM'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      responses:
+        '200':
+          description: 'Ok. Show New Question UI'
+        '302':
+          description: 'Redirect to the login page if the user is not authenticated.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Error:
+                  description: 'User not authenticated. Redirect to login page.'
+                  value: '/login'
+
+    post:
+      operationId: R205
+      summary: 'R205: Submit Question'
+      description: 'Processes the new question form submission. Access: USR, MOD, ADM'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                country:
+                  type: integer
+                city:
+                  type: integer
+              required:
+                - title
+                - content
+
+      responses:
+        '302':
+          description: 'Redirect after processing the new question information.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Question posted with success. Redirect to question page.'
+                  value: '/questions/{id}'
+                302Failure:
+                  description: 'Failed to post question. Redirect to new question form.'
+                  value: '/questions/add'
+        '422':
+          description: 'Unprocessable content.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The country field must be an integer."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The country field must be an integer." ]
+
+  /api/questions:
+    get:
+      operationId: R206
+      summary: 'R206: Get all Questions'
+      description: 'Get all questions, possibly filtered by a search term. Access: PUB'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - name: query
+          in: query
+          description: Search term to filter users.
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of results per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+
+      responses:
+        '200':
+          description: 'Questions returned with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Question'
+                  count:
+                    type: integer
+
+        '400':
+          description: 'Bad request'
+        '422':
+          description: 'Invalid query parameters.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The limit field must be an integer."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The limit field must be an integer." ]
+
+
+  /api/questions/{id}:
+    delete:
+      operationId: R207
+      summary: 'R207: Delete Question'
+      description: 'Processes the delete question request. Access: OWN, MOD'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 'The ID of the question to delete'
+
+      responses:
+        '200':
+          description: 'Question deleted with success'
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - Not authorized to delete the question'
+        '404':
+          description: 'Not found - Question with the given ID was not found'
+    post:
+      operationId: R208
+      summary: 'R208: Edit Question'
+      description: 'Processes changes made to a question. Access: OWN, MOD'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 'The ID of the question to delete'
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                country:
+                  type: integer
+                city:
+                  type: integer
+              required:
+                - title
+                - content
+
+      responses:
+        '200':
+          description: 'Question updated with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    maxLength: 10000
+                  title:
+                    type: string
+                    maxLength: 100
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - User not authorized to update the question'
+        '404':
+          description: 'Not Found - Question with the given ID not found'
+        '422':
+          description: 'Unprocessable content.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The country field must be an integer."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The country field must be an integer." ]
+    put:
+      operationId: R209
+      summary: 'R209: Add Answer'
+      description: 'Adds a new answer for the specified question. Access: USR, MOD, ADM'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the question for which to add the answer."
+          schema:
+            type: integer
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  maxLength: 10000
+              required:
+                - content
+
+      responses:
+        '200':
+          description: 'Answer posted with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: object
+                    properties:
+                      post_id:
+                        type: integer
+                      question_id:
+                        type: integer
+                      correct:
+                        type: boolean
+                      post:
+                        allOf:
+                          - $ref: '#/components/schemas/Post'
+                          - type: object
+                            properties:
+                              user:
+                                $ref: '#/components/schemas/User'
+                  username:
+                    type: string
+        '400':
+          description: 'Bad request'
+        '403':
+          description: "Forbidden - User must be authenticated."
+        '404':
+          description: "Question not found."
+        '422':
+          description: 'Unprocessable content.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The content field must not be greater than 10000 characters."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The content field must not be greater than 10000 characters." ]
+
+  /api/questions/{id}/author:
+    delete:
+      operationId: R210
+      summary: 'R210: Remove Authorship'
+      description: 'Processes the remove authorship from question request. Access: OWN, MOD'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 'The ID of the question for which to remove authorship'
+
+      responses:
+        '204':
+          description: 'Author removed with success.'
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - User not authorized to remove authorship of this question'
+        '404':
+          description: 'Not Found - The question with the given ID was not found'
+
+  /api/answers/{id}:
+    delete:
+      operationId: R211
+      summary: 'R211: Delete Answer'
+      description: 'Processes the delete answer request. Access: OWN, MOD'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 'The ID of the answer to remove'
+      responses:
+        '200':
+          description: 'Answer posted with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - Unauthorized to delete this answer'
+        '404':
+          description: 'Answer not found'
+    post:
+      operationId: R212
+      summary: 'R212: Edit Answer'
+      description: 'Processes changes made to an answer. Access: OWN, MOD'
+      tags:
+        - 'M02: Questions, Answers and Comments'
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 'The ID of the answer to update'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+              required:
+                - content
+
+      responses:
+        '200':
+          description: 'Answer edited with success'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/Post'
+        '400':
+          description: 'Bad request'
+        '403':
+          description: 'Forbidden - Unauthorized to update this answer'
+        '404':
+          description: 'Answer not found'
+        '422':
+          description: 'Unprocessable content.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The content field must not be greater than 10000 characters."
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                      example: [ "The content field must not be greater than 10000 characters." ]
+
+
